@@ -53,7 +53,7 @@ def process(split, i):
     data['extracted'] = extracted
     data['score'] = scores
     with open(join(data_dir, '{}.json'.format(i)), 'w') as f:
-        json.dump(data, f, indent=4)
+        json.dump(data, f, ensure_ascii=False,  indent=4)
 
 def label_mp(split):
     """ process the data split with multi-processing"""
@@ -83,7 +83,7 @@ def label(split):
         data['extracted'] = extracted
         data['score'] = scores
         with open(join(data_dir, '{}.json'.format(i)), 'w') as f:
-            json.dump(data, f, indent=4)
+            json.dump(data, f, ensure_ascii=False, indent=4)
     print('finished in {}'.format(timedelta(seconds=time()-start)))
 
 
