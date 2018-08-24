@@ -28,7 +28,8 @@ from data.batcher import convert_batch_extract_ptr, batchify_fn_extract_ptr
 from data.batcher import BucketedGenerater
 
 
-BUCKET_SIZE = 6400
+# BUCKET_SIZE = 6400
+BUCKET_SIZE = 640
 
 try:
     DATA_DIR = os.environ['DATA']
@@ -220,10 +221,10 @@ if __name__ == '__main__':
     parser.add_argument('--batch', type=int, action='store', default=32,
                         help='the training batch size')
     parser.add_argument(
-        '--ckpt_freq', type=int, action='store', default=3000,
+        '--ckpt_freq', type=int, action='store', default=300,
         help='number of update steps for checkpoint and validation'
     )
-    parser.add_argument('--patience', type=int, action='store', default=5,
+    parser.add_argument('--patience', type=int, action='store', default=20,
                         help='patience for early stopping')
 
     parser.add_argument('--debug', action='store_true',

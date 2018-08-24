@@ -62,6 +62,14 @@ def a2c_train_step(agent, abstractor, loader, opt, grad_fn,
                       for idx in inds if idx.item() < len(raw_arts)]
     with torch.no_grad():
         summaries = abstractor(ext_sents)
+        #print(type(summaries))
+        #print(summaries.size())
+        #print(summaries)
+        #summaries = list(concat(abstractor(ext_sents[i: i + 100]) for i in range(0, len(ext_sents), 100)))
+        #print(type(summaries))
+        #print(summaries.size())
+        #print(summaries)
+    #sys.exit(0)
     i = 0
     rewards = []
     avg_reward = 0

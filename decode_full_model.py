@@ -91,9 +91,13 @@ def decode(save_path, model_dir, split, batch_size,
             assert i == batch_size*i_debug
             for j, n in ext_inds:
                 decoded_sents = [' '.join(dec) for dec in dec_outs[j:j+n]]
+                # 查看抽取结果
+                decoded_ext_arts = [' '.join(arts) for arts in ext_arts[j:j+n]]
                 with open(join(save_path, 'output/{}.dec'.format(i)),
                           'w') as f:
-                    f.write(make_html_safe('\n'.join(decoded_sents)))
+                    # f.write(make_html_safe('\n'.join(decoded_sents)))
+                    # 查看抽取结果 
+                    f.write(make_html_safe('\n'.join(decoded_ext_arts)))
                 i += 1
                 print('{}/{} ({:.2f}%) decoded in {} seconds\r'.format(
                     i, n_data, i/n_data*100,
