@@ -15,7 +15,7 @@ import pickle as pkl
 import jieba
 import re
 
-jieba.load_userdict('mydict.txt')
+jieba.load_userdict('dict/mydict.txt')
 
 # acceptable ways to end a sentence
 END_TOKENS = ['。', '；']
@@ -73,11 +73,13 @@ def segments(src_string):
     :return: 分词后的字符串
     """
     # 分词
+    stop_list = stopword()
     words = jieba.cut(src_string)
     # 根据句号，分号添加换行符，达到换行的目的。
     split_line = []
     for word in words:
-        if word.strip() != "":
+        word = word.strip()
+        if word != "" and word not in stop_list and not word.isdigit():
             new_word = fix_missing_period(word)
             split_line.append(new_word)
     return ' '.join(split_line)
@@ -119,6 +121,20 @@ def tokenize_patents(fulltext_dir, tokenized_fulltext_dir):
         )
     print("Successfully finished tokenizing {} to {}.\n".format(
         fulltext_dir, tokenized_fulltext_dir))
+
+
+def stopword():
+    """
+    加载停用词表
+    :return: set
+    """
+    stopword_set = set()
+    with open('dict/stopword.txt', 'r', encoding='utf-8') as f:
+        for line in f:
+            word = line.strip()
+            if word != "":
+                stopword_set.add(word)
+    return stopword_set
 
 
 def fix_missing_period(word):
