@@ -135,27 +135,18 @@ def get_art_abs(patent_file):
     return as list of sentences"""
     with open(patent_file, 'r', encoding='utf-8') as fin:
         data = json.load(fin)
-    article = data['src_claim'] + data['src_instructions']
+    src_claim = data['src_claim']
+    src_instructions = data['src_instructions']
     abstract = data['label_abstract']
     # truncated trailing spaces, and normalize spaces
-    art_lines = [line.strip() for line in article.split('\n')]
+    claim_lines = [line.strip() for line in src_claim.split('\n') if line.strip() != ""]
+    instruct_lines = [line.strip() for line in src_instructions.split('\n') if line.strip() != ""]
     abst_lines = [line.strip() for line in abstract.split('\n')]
-    # Separate out article and abstract sentences
-    article_lines = []
-    abstract_lines = []
-    for idx, line in enumerate(art_lines):
-        if line == "":
-            continue # empty line
-        else:
-            article_lines.append(line)
+    # 限制正文的句子最大数量为100，摘要句子数量为10，防止异常样本导致程序出错。
+    art_lines = claim_lines[:15] + instruct_lines[:75]
+    abst_lines = abst_lines[:10]
 
-    for idx, line in enumerate(abst_lines):
-        if line == "":
-            continue  # empty line
-        else:
-            abstract_lines.append(line)
-
-    return article_lines, abstract_lines
+    return art_lines, abst_lines
 
 
 def get_instructions_abs(patent_file):
@@ -167,24 +158,12 @@ def get_instructions_abs(patent_file):
     article = data['src_instructions']
     abstract = data['label_abstract']
     # truncated trailing spaces, and normalize spaces
-    art_lines = [line.strip() for line in article.split('\n')]
-    abst_lines = [line.strip() for line in abstract.split('\n')]
-    # Separate out article and abstract sentences
-    article_lines = []
-    abstract_lines = []
-    for idx, line in enumerate(art_lines):
-        if line == "":
-            continue  # empty line
-        else:
-            article_lines.append(line)
-
-    for idx, line in enumerate(abst_lines):
-        if line == "":
-            continue  # empty line
-        else:
-            abstract_lines.append(line)
-
-    return article_lines, abstract_lines
+    art_lines = [line.strip() for line in article.split('\n') if line.strip() != ""]
+    abst_lines = [line.strip() for line in abstract.split('\n') if line.strip() != ""]
+    # 限制正文的句子最大数量为100，摘要句子数量为10，防止异常样本导致程序出错。
+    art_lines = art_lines[:100]
+    abst_lines = abst_lines[:10]
+    return art_lines, abst_lines
 
 
 def write_to_tar(patent_number_file, out_file, no_claim=True, makevocab=False):
