@@ -3,7 +3,7 @@
 # @Author  : QuietWoods
 # @FileName: make_my_dict.py
 # @Software: PyCharm
-# @Email    ：1258481281@qq.com
+
 import json
 import os
 import re
@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 # 设置matplotlib正常显示中文和负号
 matplotlib.rcParams['font.sans-serif']=['SimHei']   # 用黑体显示中文
 matplotlib.rcParams['axes.unicode_minus']=False     # 正常显示负号
+
 
 def make_my_dict(corpus_dir):
     """
