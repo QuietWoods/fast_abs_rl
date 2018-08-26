@@ -3,7 +3,7 @@
 # @Author  : QuietWoods
 # @FileName: make_datafiles.py
 # @Software: PyCharm
-# @Email    ：1258481281@qq.com
+
 import sys
 import os
 import collections
@@ -18,11 +18,12 @@ import re
 jieba.load_userdict('mydict.txt')
 
 # acceptable ways to end a sentence
-END_TOKENS = ['。']
+END_TOKENS = ['。', '；']
 
+# 语料集划分
 all_train_patents = "patent_number_lists/patent_train.txt"
 all_val_patents = "patent_number_lists/patent_test.txt"
-
+# 专利全文分词后的目录
 patent_tokenized_fulltext_dir = "patent_fulltext_tokenized"
 finished_files_dir = "finished_files"
 
@@ -30,7 +31,7 @@ finished_files_dir = "finished_files"
 num_expected_patents_fulltext = 11414
 
 
-def fixed_bug(content):
+def fixed_instructions_bug(content):
     """
     修复说明书中一些句子在下载处理过程中的失误。例如，单独一段的句子没有添加标点符号。
     :param content:
@@ -58,87 +59,28 @@ def tokenize_files(map_file):
                     # content = fin.read()
                     data = json.load(fin)
                     # 解决说明书的一些断句缺陷
-                    instructions = fixed_bug(data['src_instructions'])
-                    # 特殊字段需要格式化
-                    special_term = ['src_claim', 'label_abstract', 'src_abstract', 'src_instructions']
+                    data['src_instructions'] = fixed_instructions_bug(data['src_instructions'])
                     for k, v in data.items():
-                        if k != "src_instructions":
-                            if k in special_term:
-                                v = format_text(v)
-                            data[k] = segments(v)
-                        else:
-                            # 说明书特殊处理
-                            instructions = format_text(instructions)
-                            data[k] = segments(instructions)
+                        # 分词以及断句
+                        data[k] = segments(v)
                     json.dump(data, w_out, ensure_ascii=False, indent=4)
 
 
 def segments(src_string):
     """
-    对字符串分词
+    对字符串分词，以及断句
     :param src_string: 原始字符串
     :return: 分词后的字符串
     """
-    # format text 
-    # content = format_text(src_string)
     # 分词
     words = jieba.cut(src_string)
-    # 根据句号添加换行符，达到换行的目的。
+    # 根据句号，分号添加换行符，达到换行的目的。
     split_line = []
     for word in words:
-        new_word = fix_missing_period(word)
-        split_line.append(new_word)
+        if word.strip() != "":
+            new_word = fix_missing_period(word)
+            split_line.append(new_word)
     return ' '.join(split_line)
-
-
-def format_text(input_string):
-    """
-    格式化专利全文：
-    1、去掉配方中的量词，把配方中的逗号用顿号替代，使得一个配方成为一句话。（以逗号为基本分句单元）
-    2、去掉顿号，用空格替代
-    :param input_string: 专利全文中的各部分内容。
-    :return: 格式化后的文本内容
-    """
-    # 匹配表示数量的词，例如："5-30g、", "各300克，", "20%，"；同时会错误的匹配"1、"
-    pattern_measure = re.compile('[各]?\d{1,5}[-~.]?\d{0,6}[克份g]?[\d+\%]?[，、]+')
-    # 匹配表示数量的词，并且以句号结束。例如："3-8份。"
-    pattern_end_period = re.compile('[各]?\d{1,5}[-~]?\d{0,6}[克份g]?[。]+')
-
-    find_all_measures = re.findall(pattern_measure, input_string)
-    print('Find all measures: {}'.format(find_all_measures))
-    find_end_periods = re.findall(pattern_end_period, input_string)
-    print('Find all end period: {}'.format(find_end_periods))
-
-    # 顿号结束的，用空格断开。同时解决错误匹配的序号"1、"
-    content = re.sub(pattern=pattern_measure, repl=' ', string=input_string)
-    content = re.sub(pattern=pattern_end_period, repl='。', string=content)
-    # 用空格替换所有的顿号
-    content = re.sub(pattern='、', repl=' ', string=content)
-    return content
-
-
-def tokenize_files_text(map_file):
-    """
-    根据map.txt对文本内容分词
-    :param map_file:
-    :return:
-    """
-    with open(map_file, 'r') as maping:
-        for line in maping:
-            from_to = line.strip()
-            if from_to != "":
-                fulltext, tokenize = from_to.split()
-                with open(fulltext, 'r', encoding='utf-8') as fin, open(tokenize, 'w', encoding='utf-8') as w_out:
-                    content = fin.read()
-                    # 解决原始数据的一些缺陷
-                    content = fixed_bug(content)
-                    words = jieba.cut(content)
-                    # 根据句号添加换行符，达到换行的目的。
-                    split_line = []
-                    for word in words:
-                        new_word = fix_missing_period(word)
-                        split_line.append(new_word)
-                    w_out.write(' '.join(split_line))
 
 
 def tokenize_patents(fulltext_dir, tokenized_fulltext_dir):
@@ -179,15 +121,6 @@ def tokenize_patents(fulltext_dir, tokenized_fulltext_dir):
         fulltext_dir, tokenized_fulltext_dir))
 
 
-def read_patent_file(text_file):
-    with open(text_file, "r") as f:
-        # sentences are separated by 1 newlines
-        # single newlines might be image captions
-        # so will be incomplete sentence
-        lines = f.read().split('\n')
-    return lines
-
-
 def fix_missing_period(word):
     """Adds a period or newline to a line that is missing a period"""
     if word in END_TOKENS:
@@ -197,7 +130,9 @@ def fix_missing_period(word):
 
 
 def get_art_abs(patent_file):
-    """ return as list of sentences"""
+    """
+    描述：返回权利要求和说明书，以及摘要。
+    return as list of sentences"""
     with open(patent_file, 'r', encoding='utf-8') as fin:
         data = json.load(fin)
     article = data['src_claim'] + data['src_instructions']
@@ -216,14 +151,43 @@ def get_art_abs(patent_file):
 
     for idx, line in enumerate(abst_lines):
         if line == "":
-            continue # empty line
+            continue  # empty line
         else:
             abstract_lines.append(line)
-    # 解决说明书太长的问题，因为OOM（out of memery)，在这里把说明书句子限定在****
+
     return article_lines, abstract_lines
 
 
-def write_to_tar(patent_number_file, out_file, makevocab=False):
+def get_instructions_abs(patent_file):
+    """
+     描述：返回说明书和摘要。
+     return as list of sentences"""
+    with open(patent_file, 'r', encoding='utf-8') as fin:
+        data = json.load(fin)
+    article = data['src_instructions']
+    abstract = data['label_abstract']
+    # truncated trailing spaces, and normalize spaces
+    art_lines = [line.strip() for line in article.split('\n')]
+    abst_lines = [line.strip() for line in abstract.split('\n')]
+    # Separate out article and abstract sentences
+    article_lines = []
+    abstract_lines = []
+    for idx, line in enumerate(art_lines):
+        if line == "":
+            continue  # empty line
+        else:
+            article_lines.append(line)
+
+    for idx, line in enumerate(abst_lines):
+        if line == "":
+            continue  # empty line
+        else:
+            abstract_lines.append(line)
+
+    return article_lines, abstract_lines
+
+
+def write_to_tar(patent_number_file, out_file, no_claim=True, makevocab=False):
     """Reads the tokenized .txt files corresponding to the urls listed in the
        url_file and writes them to a out_file.
     """
@@ -265,7 +229,12 @@ def write_to_tar(patent_number_file, out_file, makevocab=False):
                 )
 
             # Get the strings to write to .bin file
-            article_sents, abstract_sents = get_art_abs(fulltext_file)
+            if no_claim:
+                # 正文中包含说明书
+                article_sents, abstract_sents = get_instructions_abs(fulltext_file)
+            else:
+                # 正文包含说明书和权利要求书
+                article_sents, abstract_sents = get_art_abs(fulltext_file)
 
             # Write to JSON file
             js_example = {}
@@ -311,12 +280,16 @@ def check_num_patents(patents_dir, num_expected):
 
 
 if __name__ == '__main__':
-
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print("USAGE: python make_datafiles.py"
-              " <patents_corpus_dir>")
+              " <patents_corpus_dir> Yes|No(no_claim)")
         sys.exit()
     patent_fulltext_dir = sys.argv[1]
+    no_claim = sys.argv[2]
+    if no_claim == "Yes":
+        no_claim = True
+    else:
+        no_claim = False
 
     # Check the patents directories contain the correct number of .txt files
     check_num_patents(patent_fulltext_dir, num_expected_patents_fulltext)
@@ -331,9 +304,8 @@ if __name__ == '__main__':
     # outputting to tokenized patents directory
     tokenize_patents(patent_fulltext_dir, patent_tokenized_fulltext_dir)
 
-
     # Read the tokenized patents, do a little postprocessing
     # then write to bin files
-    write_to_tar(all_val_patents, os.path.join(finished_files_dir, "val.tar"))
-    write_to_tar(all_train_patents, os.path.join(finished_files_dir, "train.tar"),
+    write_to_tar(all_val_patents, os.path.join(finished_files_dir, "val.tar"), no_claim=no_claim)
+    write_to_tar(all_train_patents, os.path.join(finished_files_dir, "train.tar"), no_claim=no_claim,
                  makevocab=True)
