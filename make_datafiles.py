@@ -79,7 +79,7 @@ def segments(src_string):
     split_line = []
     for word in words:
         word = word.strip()
-        if word != "" and word not in stop_list and not word.isdigit():
+        if word != "" and word not in stop_list and not word.isdigit() or word in END_TOKENS:
             new_word = fix_missing_period(word)
             split_line.append(new_word)
     return ' '.join(split_line)
