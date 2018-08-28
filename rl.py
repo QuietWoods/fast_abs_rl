@@ -17,6 +17,7 @@ from training import BasicPipeline
 
 
 def a2c_validate(agent, abstractor, loader):
+    # eval() "Sets the module in evaluation mode."
     agent.eval()
     start = time()
     print('start running validation...', end='')
@@ -62,14 +63,7 @@ def a2c_train_step(agent, abstractor, loader, opt, grad_fn,
                       for idx in inds if idx.item() < len(raw_arts)]
     with torch.no_grad():
         summaries = abstractor(ext_sents)
-        #print(type(summaries))
-        #print(summaries.size())
-        #print(summaries)
-        #summaries = list(concat(abstractor(ext_sents[i: i + 100]) for i in range(0, len(ext_sents), 100)))
-        #print(type(summaries))
-        #print(summaries.size())
-        #print(summaries)
-    #sys.exit(0)
+
     i = 0
     rewards = []
     avg_reward = 0
@@ -104,7 +98,7 @@ def a2c_train_step(agent, abstractor, loader, opt, grad_fn,
         advantage = r - b
         avg_advantage += advantage
         losses.append(-p.log_prob(action)
-                      * (advantage/len(indices))) # divide by T*B
+                      * (advantage/len(indices)))  # divide by T*B
     critic_loss = F.mse_loss(baseline, reward)
     # backprop and update
     autograd.backward(

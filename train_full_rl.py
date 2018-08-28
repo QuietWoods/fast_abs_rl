@@ -218,7 +218,7 @@ if __name__ == '__main__':
         '--ckpt_freq', type=int, action='store', default=1000,
         help='number of update steps for checkpoint and validation'
     )
-    parser.add_argument('--patience', type=int, action='store', default=3,
+    parser.add_argument('--patience', type=int, action='store', default=10,
                         help='patience for early stopping')
     parser.add_argument('--no-cuda', action='store_true',
                         help='disable GPU training')
