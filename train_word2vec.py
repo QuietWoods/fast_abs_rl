@@ -25,8 +25,8 @@ class Sentences(object):
         self._path_train = join(DATA_DIR, 'train')
         self._n_data_train = count_data(self._path_train)
         # 添加val
-        self._path_val = join(DATA_DIR, 'val')
-        self._n_data_val = count_data(self._path_val)
+        # self._path_val = join(DATA_DIR, 'val')
+        # self._n_data_val = count_data(self._path_val)
 
     def __iter__(self):
         # train
@@ -36,11 +36,11 @@ class Sentences(object):
             for s in concatv(data['article'], data['abstract']):
                 yield ['<s>'] + s.lower().split() + [r'<\s>']
         # val
-        for i in range(self._n_data_val):
-            with open(join(self._path_val, '{}.json'.format(i))) as f:
-                data = json.loads(f.read())
-            for s in concatv(data['article'], data['abstract']):
-                yield ['<s>'] + s.lower().split() + [r'<\s>']
+        # for i in range(self._n_data_val):
+        #     with open(join(self._path_val, '{}.json'.format(i))) as f:
+        #         data = json.loads(f.read())
+        #     for s in concatv(data['article'], data['abstract']):
+        #         yield ['<s>'] + s.lower().split() + [r'<\s>']
 
 
 def main(args):
