@@ -45,7 +45,7 @@ def make_my_dict(corpus_dir):
         if idx % 1000 == 0:
             print('deal with :{}'.format(idx))
 
-    with open('mydict.txt', 'w', encoding='utf-8') as fout:
+    with open('中药材词典.txt', 'w', encoding='utf-8') as fout:
         for k, v in mydict.items():
             fout.write('{} {} n\n'.format(k, v))
     print('通过标注语料的label_IT创建自定义词表，完成！')

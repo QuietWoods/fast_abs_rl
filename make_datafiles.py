@@ -15,7 +15,9 @@ import pickle as pkl
 import jieba
 import re
 
-jieba.load_userdict('dict/mydict.txt')
+jieba.load_userdict('dict/中药材词典.txt')
+jieba.load_userdict('dict/医学术语词典.txt')
+jieba.load_userdict('dict/结构词典.txt')
 
 # acceptable ways to end a sentence
 END_TOKENS = ['。', '；']
