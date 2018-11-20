@@ -3,7 +3,6 @@
 # @Author  : QuietWoods
 # @FileName: make_datafiles.py
 # @Software: PyCharm
-
 import sys
 import os
 import collections
