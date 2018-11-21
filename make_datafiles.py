@@ -3,6 +3,9 @@
 # @Author  : QuietWoods
 # @FileName: make_datafiles.py
 # @Software: PyCharm
+"""
+构建训练语料和测试语料：文本预处理，分词，断句。
+"""
 import sys
 import os
 import collections
@@ -17,7 +20,7 @@ import re
 jieba.load_userdict('dict/中药材词典.txt')
 jieba.load_userdict('dict/医学术语词典.txt')
 jieba.load_userdict('dict/结构词典.txt')
-
+# jieba.add_word('<QTY>', 500000)
 # acceptable ways to end a sentence
 END_TOKENS = ['。', '；']
 
@@ -30,6 +33,9 @@ finished_files_dir = "finished_files"
 
 # These are the number of .txt files we expect there to be in patent_fulltext_dir
 num_expected_patents_fulltext = 11414
+
+# 英语中一般人能看懂的最长单词长度为28
+LONGEST_WORD = 28
 
 
 def fixed_instructions_bug(content):
@@ -74,21 +80,32 @@ def segments(src_string):
     :return: 分词后的字符串
     """
     # 分词
-    stop_list = stopword()
-    words = jieba.cut(src_string)
+    # stop_list = stopword()  # 加载停用词典
+    # 特殊符号替换
+    content = re.sub('￣', '-', src_string)
+    content = re.sub('％', '%', content)
+    content = re.sub('～', '~', content)
+    # 数量词替换
+    content = re.sub('[0-9]+[.]?[0-9]?[千kmu]?[份%克g个]?[-~]?[0-9]?[.]?[0-9]?[千kmu]?[份%克g个]?[的]?', 'QTY', content)
+    # 数量词去重
+    content = re.sub('(QTY){2,}', 'QTY', content)
+    # 组成原料中的数量词消除
+    content = re.sub('QTY[、，：]+', '', content)
+    words = jieba.cut(content)
     # 根据句号，分号添加换行符，达到换行的目的。
     split_line = []
     for word in words:
         word = word.strip()
-        if word != "" and word not in stop_list and not word.isdigit() or word in END_TOKENS:
-            new_word = fix_missing_period(word)
-            split_line.append(new_word)
+        # if word != "" and word not in stop_list and not word.isdigit() or word in END_TOKENS:
+        if len(word) > LONGEST_WORD:
+            word = word[:LONGEST_WORD - 3] + '...'
+        new_word = deal_end_token(word)
+        split_line.append(new_word)
     return ' '.join(split_line)
 
 
 def tokenize_patents(fulltext_dir, tokenized_fulltext_dir):
-    """Maps a whole directory of .txt files to a tokenized version using
-       jieba Tokenizer
+    """把整个目录下的.txt文件通过jieba分词后映射到别一个目录下
     """
     print("Preparing to tokenize {} to {}...".format(fulltext_dir,
                                                      tokenized_fulltext_dir))
@@ -138,8 +155,8 @@ def stopword():
     return stopword_set
 
 
-def fix_missing_period(word):
-    """Adds a period or newline to a line that is missing a period"""
+def deal_end_token(word):
+    """判断是否是一句话的句尾符号"""
     if word in END_TOKENS:
         return word + '\n'
     else:
@@ -148,7 +165,7 @@ def fix_missing_period(word):
 
 def get_art_abs(patent_file):
     """
-    描述：返回权利要求和说明书，以及摘要。
+    描述：返回权利要求和说明书，以及参考摘要。
     return as list of sentences"""
     with open(patent_file, 'r', encoding='utf-8') as fin:
         data = json.load(fin)
