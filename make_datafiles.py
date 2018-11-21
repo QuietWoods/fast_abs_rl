@@ -86,11 +86,14 @@ def segments(src_string):
     content = re.sub('％', '%', content)
     content = re.sub('～', '~', content)
     # 数量词替换
-    content = re.sub('[0-9]+[.]?[0-9]?[千kmu]?[份%克g个]?[-~]?[0-9]?[.]?[0-9]?[千kmu]?[份%克g个]?[的]?', 'QTY', content)
+    content = re.sub('[0-9]+[.]?[0-9]?[千umk]?[份%克g个]?[-~]?[0-9]?[.]?[0-9]?[千muk]?[份%克g个]?[的]?[/]?[Ll]?', 'QTY', content)
     # 数量词去重
     content = re.sub('(QTY){2,}', 'QTY', content)
     # 组成原料中的数量词消除
-    content = re.sub('QTY[、，：]+', '', content)
+    content = re.sub('QTY[、，：]+?', '', content)
+    # 过滤标点符号
+    content = re.sub('[()：、，→]+?', '', content)
+
     words = jieba.cut(content)
     # 根据句号，分号添加换行符，达到换行的目的。
     split_line = []
@@ -100,7 +103,8 @@ def segments(src_string):
         if len(word) > LONGEST_WORD:
             word = word[:LONGEST_WORD - 3] + '...'
         new_word = deal_end_token(word)
-        split_line.append(new_word)
+        if new_word:
+            split_line.append(new_word)
     return ' '.join(split_line)
 
 
@@ -158,7 +162,7 @@ def stopword():
 def deal_end_token(word):
     """判断是否是一句话的句尾符号"""
     if word in END_TOKENS:
-        return word + '\n'
+        return '。\n'
     else:
         return word
 
