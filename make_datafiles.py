@@ -17,6 +17,8 @@ import pickle as pkl
 import jieba
 import re
 
+from sentence_length import seg_sent
+
 jieba.load_userdict('dict/中药材词典.txt')
 jieba.load_userdict('dict/医学术语词典.txt')
 jieba.load_userdict('dict/结构词典.txt')
@@ -80,31 +82,25 @@ def segments(src_string):
     :return: 分词后的字符串
     """
     # 分词
-    # stop_list = stopword()  # 加载停用词典
-    # 特殊符号替换
-    content = re.sub('￣', '-', src_string)
-    content = re.sub('％', '%', content)
-    content = re.sub('～', '~', content)
-    # 数量词替换
-    content = re.sub('[0-9]+[.]?[0-9]?[千umk]?[份%克g个]?[-~]?[0-9]?[.]?[0-9]?[千muk]?[份%克g个]?[的]?[/]?[Ll]?', 'QTY', content)
-    # 数量词去重
-    content = re.sub('(QTY){2,}', 'QTY', content)
-    # 组成原料中的数量词消除
-    content = re.sub('QTY[、，：]+?', '', content)
-    # 过滤标点符号
-    content = re.sub('[()：、，→]+?', '', content)
+    stop_list = stopword()  # 加载停用词典
+    content = src_string
+    # 数量词，特殊符号替换
+    content = re.sub("[0-9～+%％.`~!@#$^&*()_\-=<>?:\"{}|,/;'\\[\]·！￥…（）—《》？“”【】‘’→、]+", 'QTY', content)
+    # 分词前，对文本进行划分。
+    content_list = map(seg_sent, [sentence for sentence in content.split('。')])
+    content = "。".join(content_list)
 
     words = jieba.cut(content)
     # 根据句号，分号添加换行符，达到换行的目的。
     split_line = []
     for word in words:
         word = word.strip()
-        # if word != "" and word not in stop_list and not word.isdigit() or word in END_TOKENS:
-        if len(word) > LONGEST_WORD:
-            word = word[:LONGEST_WORD - 3] + '...'
-        new_word = deal_end_token(word)
-        if new_word:
-            split_line.append(new_word)
+        if word not in stop_list or word in END_TOKENS:
+            if len(word) > LONGEST_WORD:
+                word = word[:LONGEST_WORD - 3] + '...'
+            new_word = deal_end_token(word)
+            if new_word:
+                split_line.append(new_word)
     return ' '.join(split_line)
 
 
