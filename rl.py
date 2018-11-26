@@ -17,7 +17,9 @@ from training import BasicPipeline
 
 
 def a2c_validate(agent, abstractor, loader):
-    # eval() "Sets the module in evaluation mode."
+    # eval() "Sets the module in evaluation mode.
+    # model.eval()，让model变成测试模式，
+    # 对dropout和batch normalization的操作在训练和测试的时候是不一样的"
     agent.eval()
     start = time()
     print('start running validation...', end='')
