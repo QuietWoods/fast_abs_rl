@@ -103,6 +103,8 @@ def segments(content):
     """
     # 分词
     stop_list = stopword()  # 加载停用词典
+    if not content:
+        return None
     words = jieba.cut(content)
     # 根据句号，分号添加换行符，达到换行的目的。
     split_line = []
