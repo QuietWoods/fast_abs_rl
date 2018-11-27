@@ -69,20 +69,16 @@ def tokenize_files(map_file):
                     data = json.load(fin)
                     # 解决说明书的一些断句缺陷
                     data['src_instructions'] = fixed_instructions_bug(data['src_instructions'])
+                    markedly_label = ['src_instructions', 'label_abstract', 'src_claim', 'src_abstract']
                     for k, v in data.items():
                         # 分词以及断句
+                        if k in markedly_label:
+                            v = _deal_with_sentence(v)
                         data[k] = segments(v)
                     json.dump(data, w_out, ensure_ascii=False, indent=4)
 
 
-def segments(content):
-    """
-    对字符串分词，以及断句
-    :param content: 原始字符串
-    :return: 分词后的字符串
-    """
-    # 分词
-    stop_list = stopword()  # 加载停用词典
+def _deal_with_sentence(content):
     # 数量词，特殊符号替换
     content = re.sub("[0-9]+[～+%％.`~!@#$^&*()_\-=<>?:\"{}|,/;'\\[\]·！￥…（）—→℃φμ±∶×]+", 'QTY', content)
     # 去重多个连续的QTY， 以及QTY后接数字和字母的情况。
@@ -96,7 +92,17 @@ def segments(content):
     # 分词前，对文本进行划分。
     content_list = filter(lambda x: len(x) > 1, map(seg_sent, [sentence for sentence in content.split('。')]))
     content = "。".join(content_list)
+    return content
 
+
+def segments(content):
+    """
+    对字符串分词，以及断句
+    :param content: 原始字符串
+    :return: 分词后的字符串
+    """
+    # 分词
+    stop_list = stopword()  # 加载停用词典
     words = jieba.cut(content)
     # 根据句号，分号添加换行符，达到换行的目的。
     split_line = []
