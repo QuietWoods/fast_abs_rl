@@ -3,12 +3,12 @@
 # @Author  : QuietWoods
 # @FileName: sentence_length.py
 # @Software: PyCharm
-
+import re
 
 SENTENCE_MAX_LENGTH = 100  # 句子字符串最大长度
 
 
-def _merg_seg(text: str)->list:
+def _merg_seg(text: str, separator="，")->list:
     """
     合并子句，使合并后的子句长度最可能接近100而不超过100。
     exampls:
@@ -20,7 +20,7 @@ def _merg_seg(text: str)->list:
     cache_seg = []  # 缓冲列表
     max_len = SENTENCE_MAX_LENGTH  # 限定长度
     nearest_len = 0
-    items = text.split('，')
+    items = text.split(separator)
     sum_seg = len(items)
     for i, item in enumerate(items):
         item_len = len(item)
@@ -29,13 +29,13 @@ def _merg_seg(text: str)->list:
         # 当前子句长度大于限定长度
         if item_len > max_len:
             if cache_seg.__len__():  # 缓冲列表不为空
-                segs.append('，'.join(cache_seg))
+                segs.append(separator.join(cache_seg))
             segs.append(item)
             nearest_len = 0
             cache_seg = []
         else:
             if nearest_len + item_len > max_len:
-                segs.append('，'.join(cache_seg))
+                segs.append(separator.join(cache_seg))
                 cache_seg = []
                 cache_seg.append(item)
                 nearest_len = item_len
@@ -44,12 +44,15 @@ def _merg_seg(text: str)->list:
                 cache_seg.append(item)
             else:                  # 最后一个item
                 cache_seg.append(item)
-                segs.append('，'.join(cache_seg))
+                segs.append(separator.join(cache_seg))
                 cache_seg = []
 
     # 处理字符串尾部
     if cache_seg:
-        segs.append("，".join(cache_seg))
+        segs.append(separator.join(cache_seg))
+    # 子句中不存在汉字，过滤。
+    segs = filter(lambda seg: re.search('[\u4E00-\u9FFF]', seg), segs)
+
     return segs
 
 
@@ -68,11 +71,43 @@ def seg_sent(sentence):
     """
     if len(sentence) > SENTENCE_MAX_LENGTH:
         if sentence.find('；') >= 0:
-            sents = sentence.split('；')
+            sents = _merg_seg(sentence, '；')
+            result = []
+            for sent in sents:
+                if len(sent) > SENTENCE_MAX_LENGTH:
+                    sent = "。".join(_merg_seg(sent, '，'))
+                if sent[-1] == '；':
+                    sent = sent[:-1] + '。'
+                result.append(sent)
+            return ''.join(result)
         # elif sentence.find('：') >= 0:
         #     sents = sentence.split('：')
         else:
-            sents = _merg_seg(sentence)
+            sents = _merg_seg(sentence, '，')
         return '。'.join(sents)
+
     else:
         return sentence
+
+
+
+def sentence_duplicated_remove(content):
+    """
+    句子去重
+    :param content:
+    :return:
+    """
+    if not content:
+        return None
+    unique_sentence = []
+    sentences = content.split('。')
+    # 不存在句号
+    if len(sentences) <= 1:
+        return content
+    for sent in sentences:
+        if sent not in unique_sentence:
+            unique_sentence.append(sent)
+    return '。'.join(unique_sentence)
+
+
+

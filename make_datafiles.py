@@ -24,7 +24,7 @@ jieba.load_userdict('dict/医学术语词典.txt')
 jieba.load_userdict('dict/结构词典.txt')
 # jieba.add_word('<QTY>', 500000)
 # acceptable ways to end a sentence
-END_TOKENS = ['。', '；']
+END_TOKENS = ['。']
 
 # 语料集划分
 all_train_patents = "patent_number_lists/patent_train.txt"
@@ -37,7 +37,7 @@ finished_files_dir = "finished_files"
 num_expected_patents_fulltext = 11414
 
 # 英语中一般人能看懂的最长单词长度为28
-LONGEST_WORD = 28
+LONGEST_WORD = 18
 
 
 def fixed_instructions_bug(content):
@@ -75,19 +75,26 @@ def tokenize_files(map_file):
                     json.dump(data, w_out, ensure_ascii=False, indent=4)
 
 
-def segments(src_string):
+def segments(content):
     """
     对字符串分词，以及断句
-    :param src_string: 原始字符串
+    :param content: 原始字符串
     :return: 分词后的字符串
     """
     # 分词
     stop_list = stopword()  # 加载停用词典
-    content = src_string
     # 数量词，特殊符号替换
-    content = re.sub("[0-9～+%％.`~!@#$^&*()_\-=<>?:\"{}|,/;'\\[\]·！￥…（）—《》？“”【】‘’→、]+", 'QTY', content)
+    content = re.sub("[0-9]+[～+%％.`~!@#$^&*()_\-=<>?:\"{}|,/;'\\[\]·！￥…（）—→℃φμ±∶×]+", 'QTY', content)
+    # 去重多个连续的QTY， 以及QTY后接数字和字母的情况。
+    content = re.sub('QTY[a-zA-Z0-9]+', 'QTY', content)
+    # 去除“QTY，QTY”这种形式。
+    content = re.sub('(QTY，QTY)+', '', content)
+
+    # content = re.sub('([\d]{1,3}，)+', 'NUM', content)
+    # 去掉顿号，在停用词表中添加了顿号。
+    # content = re.sub('、', '', content)
     # 分词前，对文本进行划分。
-    content_list = map(seg_sent, [sentence for sentence in content.split('。')])
+    content_list = filter(lambda x: len(x) > 1, map(seg_sent, [sentence for sentence in content.split('。')]))
     content = "。".join(content_list)
 
     words = jieba.cut(content)
@@ -101,6 +108,7 @@ def segments(src_string):
             new_word = deal_end_token(word)
             if new_word:
                 split_line.append(new_word)
+
     return ' '.join(split_line)
 
 
@@ -176,8 +184,8 @@ def get_art_abs(patent_file):
     claim_lines = [line.strip() for line in src_claim.split('\n') if line.strip() != ""]
     instruct_lines = [line.strip() for line in src_instructions.split('\n') if line.strip() != ""]
     abst_lines = [line.strip() for line in abstract.split('\n')]
-    # 限制正文的句子最大数量为100，摘要句子数量为10，防止异常样本导致程序出错。
-    art_lines = claim_lines[:15] + instruct_lines[:75]
+    # 限制正文的句子最大数量为256，摘要句子数量为10，防止异常样本导致程序出错。
+    art_lines = claim_lines[:15] + instruct_lines[:241]
     abst_lines = abst_lines[:10]
 
     return art_lines, abst_lines
@@ -194,8 +202,8 @@ def get_instructions_abs(patent_file):
     # truncated trailing spaces, and normalize spaces
     art_lines = [line.strip() for line in article.split('\n') if line.strip() != ""]
     abst_lines = [line.strip() for line in abstract.split('\n') if line.strip() != ""]
-    # 限制正文的句子最大数量为100，摘要句子数量为10，防止异常样本导致程序出错。
-    art_lines = art_lines[:100]
+    # 限制正文的句子最大数量为256，摘要句子数量为10，防止异常样本导致程序出错。
+    art_lines = art_lines[:256]
     abst_lines = abst_lines[:10]
     return art_lines, abst_lines
 
