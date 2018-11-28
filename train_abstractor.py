@@ -207,7 +207,7 @@ if __name__ == '__main__':
         '--ckpt_freq', type=int, action='store', default=300,
         help='number of update steps for checkpoint and validation'
     )
-    parser.add_argument('--patience', type=int, action='store', default=20,
+    parser.add_argument('--patience', type=int, action='store', default=10,
                         help='patience for early stopping')
 
     parser.add_argument('--debug', action='store_true',
