@@ -75,7 +75,7 @@ def decode(save_path, model_dir, split, batch_size,
             ext_inds = []
             for raw_art_sents in tokenized_article_batch:
                 ext = extractor(raw_art_sents)[:-1]  # exclude EOE
-                print("ext from extractor:{}\n", len(ext))
+                print("ext from extractor:{}\n".format(len(ext)))
                 if not ext:
                     # use top-5 if nothing is extracted
                     # in some rare cases rnn-ext does not extract at all
@@ -99,7 +99,8 @@ def decode(save_path, model_dir, split, batch_size,
                 print('{}/{} ({:.2f}%) decoded in {} seconds\r'.format(
                     i, n_data, i/n_data*100,
                     timedelta(seconds=int(time()-start))
-                ), end='')
+                ), end='\n')
+            print('i_debug:{}'.format(i_debug))
     print()
 
 _PRUNE = defaultdict(
