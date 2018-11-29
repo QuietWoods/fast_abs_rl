@@ -32,6 +32,7 @@ def a2c_validate(agent, abstractor, loader):
             for raw_arts in art_batch:
                 indices = agent(raw_arts)
                 # 限制抽取句子的数量在10条以内，不然会导致下面的abstractor内存溢出！！！
+                print('a2c_validate indices length:{}'.format(len(indices)))
                 indices = indices[:10]
                 ext_inds += [(len(ext_sents), len(indices)-1)]
                 ext_sents += [raw_arts[idx.item()]
@@ -60,6 +61,12 @@ def a2c_train_step(agent, abstractor, loader, opt, grad_fn,
     art_batch, abs_batch = next(loader)
     for raw_arts in art_batch:
         (inds, ms), bs = agent(raw_arts)
+        # 限制抽取句子的数量在10条以内，不然会导致下面的abstractor cpu 内存溢出！！！
+        print('a2c_train_step indices length:{}'.format(len(inds)))
+        print(ms)
+        print(bs)
+        inds = inds[:10]
+
         baselines.append(bs)
         indices.append(inds)
         probs.append(ms)
