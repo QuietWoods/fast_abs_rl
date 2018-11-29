@@ -62,10 +62,11 @@ def a2c_train_step(agent, abstractor, loader, opt, grad_fn,
     for raw_arts in art_batch:
         (inds, ms), bs = agent(raw_arts)
         # 限制抽取句子的数量在10条以内，不然会导致下面的abstractor cpu 内存溢出！！！
-        print('a2c_train_step indices length:{}'.format(len(inds)))
-        print(ms)
-        print(bs)
-        inds = inds[:10]
+        print('a2c_train_step inds length:{}'.format(len(inds)))
+        print('a2c_train_step ms length:{}'.format(len(ms)))
+        print('a2c_train_step bs length:{}'.format(len(bs)))
+
+        # inds = inds[:10]
 
         baselines.append(bs)
         indices.append(inds)
