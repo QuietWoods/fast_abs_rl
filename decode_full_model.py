@@ -74,6 +74,9 @@ def decode(save_path, model_dir, split, batch_size,
             ext_arts = []
             ext_inds = []
             for raw_art_sents in tokenized_article_batch:
+                # 限制专利说明书的长度。不超过100句。
+                if len(raw_art_sents) > 100:
+                    raw_art_sents = raw_art_sents[:100]
                 ext = extractor(raw_art_sents)[:-1]  # exclude EOE
                 if not ext:
                     # use top-5 if nothing is extracted
