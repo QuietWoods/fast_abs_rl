@@ -76,6 +76,7 @@ def decode(save_path, model_dir, split, batch_size,
             for raw_art_sents in tokenized_article_batch:
                 ext = extractor(raw_art_sents)[:-1]  # exclude EOE
                 print("ext from extractor:{}\n".format(len(ext)))
+                ext = ext[:10]
                 if not ext:
                     # use top-5 if nothing is extracted
                     # in some rare cases rnn-ext does not extract at all
