@@ -34,7 +34,7 @@ patent_tokenized_fulltext_dir = "patent_fulltext_tokenized"
 finished_files_dir = "finished_files"
 
 # These are the number of .txt files we expect there to be in patent_fulltext_dir
-num_expected_patents_fulltext = 11414
+num_expected_patents_fulltext = 11105
 
 # 英语中一般人能看懂的最长单词长度为28
 LONGEST_WORD = 18
