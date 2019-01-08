@@ -33,7 +33,7 @@ def a2c_validate(agent, abstractor, loader):
                 indices = agent(raw_arts)
                 # 限制抽取句子的数量在10条以内，不然会导致下面的abstractor内存溢出！！！
                 print('a2c_validate indices length:{}'.format(len(indices)))
-                indices = indices[:10]
+                # indices = indices[:10]
                 ext_inds += [(len(ext_sents), len(indices)-1)]
                 ext_sents += [raw_arts[idx.item()]
                               for idx in indices if idx.item() < len(raw_arts)]
