@@ -67,6 +67,6 @@ if __name__ == '__main__':
     # abstract = "G:\\data\\patent\\tmp\\abstract"
     # prepare_for_data(fulltext=fulltext, abstract=abstract)
     with open('patent_number_lists.txt', 'w', encoding='utf-8') as w:
-        for idx, fname in enumerate(os.listdir("G:\\data\\patent\\tmp\\patent_corpus")):
+        for idx, fname in enumerate(os.listdir(r"G:\data\patent\tmp\filter_patents")):
             w.write('{}\t{}\n'.format(idx + 1, fname.split('.')[0]))
     make_train_test('patent_number_lists.txt')
