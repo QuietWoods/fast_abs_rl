@@ -216,6 +216,24 @@ def get_instructions_abs(patent_file):
     return art_lines, abst_lines
 
 
+def get_instructions_two_abs(patent_file):
+    """
+     描述：返回说明书，人工摘要， 原始摘要。
+     return as list of sentences"""
+    with open(patent_file, 'r', encoding='utf-8') as fin:
+        data = json.load(fin)
+    # 正文包含说明书摘要和说明书。
+    article = data['src_abstract'] + data['src_instructions']
+    abstract = data['label_abstract']
+    # truncated trailing spaces, and normalize spaces
+    art_lines = [line.strip() for line in article.split('\n') if line.strip() != ""]
+    abst_lines = [line.strip() for line in abstract.split('\n') if line.strip() != ""]
+    # 限制正文的句子最大数量为256，摘要句子数量为10，防止异常样本导致程序出错。
+    art_lines = art_lines[:256]
+    abst_lines = abst_lines[:10]
+    return art_lines, abst_lines
+
+
 def write_to_tar(patent_number_file, out_file, no_claim=True, makevocab=False):
     """Reads the tokenized .txt files corresponding to the urls listed in the
        url_file and writes them to a out_file.
@@ -260,7 +278,9 @@ def write_to_tar(patent_number_file, out_file, no_claim=True, makevocab=False):
             # Get the strings to write to .bin file
             if no_claim:
                 # 正文中包含说明书
-                article_sents, abstract_sents = get_instructions_abs(fulltext_file)
+                # article_sents, abstract_sents = get_instructions_abs(fulltext_file)
+                # 正文包含说明书摘要和说明书
+                article_sents, abstract_sents = get_instructions_two_abs(fulltext_file)
             else:
                 # 正文包含说明书和权利要求书
                 article_sents, abstract_sents = get_art_abs(fulltext_file)

@@ -190,7 +190,7 @@ if __name__ == '__main__':
     # length limit
     parser.add_argument('--max_art', type=int, action='store', default=100,
                         help='maximun words in a single article sentence')
-    parser.add_argument('--max_abs', type=int, action='store', default=50,
+    parser.add_argument('--max_abs', type=int, action='store', default=60,
                         help='maximun words in a single abstract sentence')
     # training options
     parser.add_argument('--lr', type=float, action='store', default=1e-3,

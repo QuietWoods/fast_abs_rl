@@ -5,7 +5,7 @@
 # @Software: PyCharm
 import re
 
-SENTENCE_MAX_LENGTH = 100  # 句子字符串最大长度
+SENTENCE_MAX_LENGTH = 200  # 句子字符串最大长度
 
 
 def _merg_seg(text: str, separator="，")->list:
