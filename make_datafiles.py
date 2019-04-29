@@ -64,18 +64,22 @@ def tokenize_files(map_file):
             from_to = line.strip()
             if from_to != "":
                 fulltext, tokenize = from_to.split()
-                with open(fulltext, 'r', encoding='utf-8') as fin, open(tokenize, 'w', encoding='utf-8') as w_out:
-                    # content = fin.read()
-                    data = json.load(fin)
-                    # 解决说明书的一些断句缺陷
-                    data['src_instructions'] = fixed_instructions_bug(data['src_instructions'])
-                    markedly_label = ['src_instructions', 'label_abstract', 'src_claim', 'src_abstract']
-                    for k, v in data.items():
-                        # 分词以及断句
-                        if k in markedly_label:
-                            v = _deal_with_sentence(v)
-                        data[k] = segments(v)
-                    json.dump(data, w_out, ensure_ascii=False, indent=4)
+                tokenize_file(fulltext, tokenize)
+
+
+def tokenize_file(original, dest):
+    with open(original, 'r', encoding='utf-8') as fin, open(dest, 'w', encoding='utf-8') as w_out:
+        # content = fin.read()
+        data = json.load(fin)
+        # 解决说明书的一些断句缺陷
+        data['src_instructions'] = fixed_instructions_bug(data['src_instructions'])
+        markedly_label = ['src_instructions', 'label_abstract', 'src_claim', 'src_abstract']
+        for k, v in data.items():
+            # 分词以及断句
+            if k in markedly_label:
+                v = _deal_with_sentence(v)
+            data[k] = segments(v)
+        json.dump(data, w_out, ensure_ascii=False, indent=4)
 
 
 def _deal_with_sentence(content):
